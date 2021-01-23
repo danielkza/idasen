@@ -1,5 +1,4 @@
 import sys
-import time
 
 from bleak import BleakClient
 from bleak import discover
@@ -84,7 +83,8 @@ class IdasenDesk:
         self._client = BleakClient(self._mac)
 
     async def __aenter__(self):
-        await self._connect()
+        if not await self.is_connected():
+            await self._connect()
         return self
 
     async def __aexit__(self, *args, **kwargs) -> Optional[bool]:
@@ -106,7 +106,7 @@ class IdasenDesk:
                 self._logger.warning(
                     f"Failed to connect, retrying ({i}/{self.RETRY_COUNT})..."
                 )
-                time.sleep(0.3 * i)
+                await asyncio.sleep(0.3 * i)
 
     async def is_connected(self) -> bool:
         """
